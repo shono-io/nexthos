@@ -1,0 +1,8 @@
+input:
+  generate:
+    interval: 1s
+    mapping: |-
+      root.seq = counter()
+
+output:
+  stdout: {}
