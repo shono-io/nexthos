@@ -10,12 +10,12 @@ import (
 
 func NewProcessors(js jetstream.JetStream) (*Processors, error) {
 	enc := nats.EncoderForType(nats.JSON_ENCODER)
-	kv, err := js.KeyValue(context.Background(), "processors")
+	kv, err := js.KeyValue(context.Background(), "nexthos_processors")
 	if err != nil {
 		return nil, fmt.Errorf("unable to get the processors key value store: %w", err)
 	}
 
-	ob, err := js.ObjectStore(context.Background(), "processor_logic")
+	ob, err := js.ObjectStore(context.Background(), "nexthos_processor_logic")
 	if err != nil {
 		return nil, fmt.Errorf("unable to get the processor logic object store: %w", err)
 	}

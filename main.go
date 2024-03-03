@@ -23,12 +23,12 @@ func main() {
 
 	nc, err := cfg.Connect()
 	if err != nil {
-		panic(fmt.Errorf("unable to connect to data cluster: %w", err))
+		panic(fmt.Errorf("unable to connect to nexthos cluster: %w", err))
 	}
 
 	js, err := jetstream.New(nc)
 	if err != nil {
-		panic(fmt.Errorf("unable to connect to data jetstream: %w", err))
+		panic(fmt.Errorf("unable to connect to nexthos jetstream: %w", err))
 	}
 
 	procs, err := pkg.NewProcessors(js)
@@ -54,19 +54,19 @@ func main() {
 		panic(fmt.Errorf("unable to load yaml content: %w", err))
 	}
 
+	fmt.Printf("Starting %s processor", cfg.Processor.Key)
+
 	// request handler
 	echoHandler := func(req services.Request) {
 		req.Respond(req.Data())
 	}
-
-	fmt.Println("Starting echo service")
 
 	_, err = services.AddService(nc, services.Config{
 		Name:    proc.Key,
 		Version: cfg.Processor.Version,
 		// base handler
 		Endpoint: &services.EndpointConfig{
-			Subject: fmt.Sprintf("svc.%s.%s", cfg.Context, proc.Key),
+			Subject: fmt.Sprintf("svc.nexthos.%s", proc.Key),
 			Handler: services.HandlerFunc(echoHandler),
 		},
 	})

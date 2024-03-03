@@ -10,37 +10,30 @@ import (
 func LoadEnv() (Config, error) {
 	result := Config{}
 
-	result.Context = os.Getenv("SHONO_CONTEXT")
-	if len(strings.TrimSpace(result.Context)) == 0 {
-		return Config{}, fmt.Errorf("SHONO_CONTEXT is required")
-	}
-
-	result.Processor.Key = os.Getenv("SHONO_PROCESSOR_KEY")
+	result.Processor.Key = os.Getenv("NEXTHOS_PROCESSOR_KEY")
 	if len(strings.TrimSpace(result.Processor.Key)) == 0 {
-		return Config{}, fmt.Errorf("SHONO_PROCESSOR_KEY is required")
+		return Config{}, fmt.Errorf("NEXTHOS_PROCESSOR_KEY is required")
 	}
 
-	result.Processor.Version = os.Getenv("SHONO_PROCESSOR_VERSION")
+	result.Processor.Version = os.Getenv("NEXTHOS_PROCESSOR_VERSION")
 	if len(strings.TrimSpace(result.Processor.Version)) == 0 {
-		return Config{}, fmt.Errorf("SHONO_PROCESSOR_VERSION is required")
+		return Config{}, fmt.Errorf("NEXTHOS_PROCESSOR_VERSION is required")
 	}
 
-	result.Shono.Url = os.Getenv("SHONO_URL")
-	if len(strings.TrimSpace(result.Shono.Url)) == 0 {
-		result.Shono.Url = nats.DefaultURL
+	result.Nats.Url = os.Getenv("NEXTHOS_NATS_URL")
+	if len(strings.TrimSpace(result.Nats.Url)) == 0 {
+		result.Nats.Url = nats.DefaultURL
 	}
 
-	result.Shono.Jwt = os.Getenv("SHONO_JWT")
-	result.Shono.Seed = os.Getenv("SHONO_SEED")
+	result.Nats.Jwt = os.Getenv("NEXTHOS_NATS_JWT")
+	result.Nats.Seed = os.Getenv("NEXTHOS_NATS_SEED")
 
 	return result, nil
 }
 
 type Config struct {
-	Context string
-
 	Processor ProcessorConfig
-	Shono     ShonoConfig
+	Nats      NatsConfig
 }
 
 type ProcessorConfig struct {
@@ -48,7 +41,7 @@ type ProcessorConfig struct {
 	Version string
 }
 
-type ShonoConfig struct {
+type NatsConfig struct {
 	Url  string
 	Jwt  string
 	Seed string
@@ -57,8 +50,11 @@ type ShonoConfig struct {
 func (c Config) Connect() (*nats.Conn, error) {
 	natsOpts := []nats.Option{
 		nats.Name(c.Processor.Key),
-		nats.UserJWTAndSeed(c.Shono.Jwt, c.Shono.Seed),
 	}
 
-	return nats.Connect(c.Shono.Url, natsOpts...)
+	if c.Nats.Jwt != "" {
+		natsOpts = append(natsOpts, nats.UserJWTAndSeed(c.Nats.Jwt, c.Nats.Seed))
+	}
+
+	return nats.Connect(c.Nats.Url, natsOpts...)
 }
